@@ -1,0 +1,255 @@
+{
+  "paragraphs": [
+    {
+      "text": "\n\nimport org.apache.spark.ml.feature.{VectorAssembler,StringIndexer,IndexToString, Binarizer}\nimport org.apache.spark.ml.classification.{RandomForestClassificationModel, RandomForestClassifier}\nimport org.apache.spark.ml.evaluation.{MulticlassClassificationEvaluator}\nimport org.apache.spark.ml.{Pipeline,PipelineModel}  \nimport org.apache.spark.ml.feature.PCA\n\n// MLeap/Bundle.ML Serialization Libraries\nimport ml.combust.mleap.spark.SparkSupport._\nimport resource._\nimport ml.combust.bundle.BundleFile\nimport org.apache.spark.ml.bundle.SparkBundleContext\n",
+      "dateUpdated": "Jan 19, 2017 10:32:49 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1482818326083_-1521789996",
+      "id": "20161226-215846_181075929",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "\nimport org.apache.spark.ml.feature.{VectorAssembler, StringIndexer, IndexToString, Binarizer}\n\nimport org.apache.spark.ml.classification.{RandomForestClassificationModel, RandomForestClassifier}\n\nimport org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator\n\nimport org.apache.spark.ml.{Pipeline, PipelineModel}\n\nimport org.apache.spark.ml.feature.PCA\n\nimport ml.combust.mleap.spark.SparkSupport._\n\nimport resource._\n\nimport ml.combust.bundle.BundleFile\n\nimport org.apache.spark.ml.bundle.SparkBundleContext\n"
+      },
+      "dateCreated": "Dec 26, 2016 9:58:46 AM",
+      "dateStarted": "Jan 19, 2017 10:32:51 PM",
+      "dateFinished": "Jan 19, 2017 10:33:07 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "\nval datasetPath \u003d \"/Users/mikhail/combust/mleap-demo/data/mnist/mnist_train.csv\"\nvar dataset \u003d spark.sqlContext.read.format(\"com.databricks.spark.csv\").\n                 option(\"header\", \"true\").\n                 option(\"inferSchema\", \"true\").\n                 load(datasetPath)\n                 \nval testDatasetPath \u003d \"/Users/mikhail/combust/mleap-demo/data/mnist/mnist_test.csv\"\nvar test \u003d spark.sqlContext.read.format(\"com.databricks.spark.csv\").\n                 option(\"inferSchema\", \"true\").\n                 option(\"header\", \"true\").\n                 load(testDatasetPath)",
+      "dateUpdated": "Jan 19, 2017 10:34:14 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1482818335300_801339187",
+      "id": "20161226-215855_1888636590",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "\ndatasetPath: String \u003d /Users/mikhail/combust/mleap-demo/data/mnist/mnist_train.csv\n\ndataset: org.apache.spark.sql.DataFrame \u003d [label: int, x0: double ... 783 more fields]\n\ntestDatasetPath: String \u003d /Users/mikhail/combust/mleap-demo/data/mnist/mnist_test.csv\n\ntest: org.apache.spark.sql.DataFrame \u003d [label: int, x0: double ... 783 more fields]\n"
+      },
+      "dateCreated": "Dec 26, 2016 9:58:55 AM",
+      "dateStarted": "Jan 19, 2017 10:34:14 PM",
+      "dateFinished": "Jan 19, 2017 10:34:29 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "dataset.registerTempTable(\"df\")\ntest.registerTempTable(\"df_test\")\n\nval df_subset \u003d spark.sqlContext.sql(f\"\"\"\n    select\n        *\n    from df\n    where label in(0,5,7,8,9)\n\"\"\")",
+      "dateUpdated": "Jan 19, 2017 10:41:56 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1482818504474_-729314531",
+      "id": "20161226-220144_1467538233",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "\nwarning: there was one deprecation warning; re-run with -deprecation for details\n\nwarning: there was one deprecation warning; re-run with -deprecation for details\n\ndf_subset: org.apache.spark.sql.DataFrame \u003d [label: int, x0: double ... 783 more fields]\n"
+      },
+      "dateCreated": "Dec 26, 2016 10:01:44 AM",
+      "dateStarted": "Jan 19, 2017 10:41:56 PM",
+      "dateFinished": "Jan 19, 2017 10:41:57 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "// Define Dependent and Independent Features\nval predictionCol \u003d \"label\"\nval labels \u003d Seq(\"0\",\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\")  \nval pixelFeatures \u003d (0 until 784).map(x \u003d\u003e s\"x$x\").toArray\n\nval layers \u003d Array[Int](pixelFeatures.length, 784, 800, labels.length)\n\nval vector_assembler \u003d new VectorAssembler()  \n  .setInputCols(pixelFeatures)\n  .setOutputCol(\"features\")\n\nval stringIndexer \u003d { new StringIndexer()  \n  .setInputCol(predictionCol)\n  .setOutputCol(\"label_index\")\n  .fit(dataset)\n}\n  \nval binarizer \u003d new Binarizer()  \n  .setInputCol(vector_assembler.getOutputCol)\n  .setThreshold(127.5)\n  .setOutputCol(\"binarized_features\")\n  \nval pca \u003d new PCA().\n  setInputCol(binarizer.getOutputCol).\n  setOutputCol(\"pcaFeatures\").\n  setK(10)\n\nval featurePipeline \u003d new Pipeline().setStages(Array(vector_assembler, stringIndexer, binarizer, pca))\n\n// Transform the raw data with the feature pipeline and persist it\nval featureModel \u003d featurePipeline.fit(dataset)\n\nval datasetWithFeatures \u003d featureModel.transform(df_subset)\n\n// Select only the data needed for training and persist it\nval datasetPcaFeaturesOnly \u003d datasetWithFeatures.select(stringIndexer.getOutputCol, pca.getOutputCol)\nval datasetPcaFeaturesOnlyPersisted \u003d datasetPcaFeaturesOnly.persist()",
+      "dateUpdated": "Jan 19, 2017 10:41:59 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1482818344019_1755531783",
+      "id": "20161226-215904_440455147",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "\npredictionCol: String \u003d label\n\nlabels: Seq[String] \u003d List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)\npixelFeatures: Array[String] \u003d Array(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x26, x27, x28, x29, x30, x31, x32, x33, x34, x35, x36, x37, x38, x39, x40, x41, x42, x43, x44, x45, x46, x47, x48, x49, x50, x51, x52, x53, x54, x55, x56, x57, x58, x59, x60, x61, x62, x63, x64, x65, x66, x67, x68, x69, x70, x71, x72, x73, x74, x75, x76, x77, x78, x79, x80, x81, x82, x83, x84, x85, x86, x87, x88, x89, x90, x91, x92, x93, x94, x95, x96, x97, x98, x99, x100, x101, x102, x103, x104, x105, x106, x107, x108, x109, x110, x111, x112, x113, x114, x115, x116, x117, x118, x119, x120, x121, x122, x123, x124, x125, x126, x127, x128, x129, x130, x131, x132, x133, x134, x135, x136, x137, x138, x139, x140, x141, x142, x143, x144, ...\nlayers: Array[Int] \u003d Array(784, 784, 800, 10)\n\nvector_assembler: org.apache.spark.ml.feature.VectorAssembler \u003d vecAssembler_ac7224fa3046\n\nstringIndexer: org.apache.spark.ml.feature.StringIndexerModel \u003d strIdx_b32c9355cd9b\n\nbinarizer: org.apache.spark.ml.feature.Binarizer \u003d binarizer_58de44c4eda7\n\npca: org.apache.spark.ml.feature.PCA \u003d pca_b9b93699548e\n\nfeaturePipeline: org.apache.spark.ml.Pipeline \u003d pipeline_2da8974da1a1\n\nfeatureModel: org.apache.spark.ml.PipelineModel \u003d pipeline_2da8974da1a1\n\ndatasetWithFeatures: org.apache.spark.sql.DataFrame \u003d [label: int, x0: double ... 787 more fields]\n\ndatasetPcaFeaturesOnly: org.apache.spark.sql.DataFrame \u003d [label_index: double, pcaFeatures: vector]\n\ndatasetPcaFeaturesOnlyPersisted: datasetPcaFeaturesOnly.type \u003d [label_index: double, pcaFeatures: vector]\n"
+      },
+      "dateCreated": "Dec 26, 2016 9:59:04 AM",
+      "dateStarted": "Jan 19, 2017 10:41:59 PM",
+      "dateFinished": "Jan 19, 2017 10:42:20 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "// You can optionally experiment with CrossValidator and MulticlassClassificationEvaluator to determine optimal\n// settings for the random forest\n\nval rf \u003d new RandomForestClassifier().\n      setFeaturesCol(pca.getOutputCol).\n      setLabelCol(stringIndexer.getOutputCol).\n      setPredictionCol(\"prediction\").\n      setProbabilityCol(\"probability\").\n      setRawPredictionCol(\"raw_prediction\")\n\nval rfModel \u003d rf.fit(datasetPcaFeaturesOnlyPersisted)",
+      "dateUpdated": "Jan 19, 2017 10:45:13 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1482818416201_1348775575",
+      "id": "20161226-220016_1079777810",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "\nrf: org.apache.spark.ml.classification.RandomForestClassifier \u003d rfc_4cd027e700cb\n\nrfModel: org.apache.spark.ml.classification.RandomForestClassificationModel \u003d RandomForestClassificationModel (uid\u003drfc_87985a6849f4) with 20 trees\n"
+      },
+      "dateCreated": "Dec 26, 2016 10:00:16 AM",
+      "dateStarted": "Jan 19, 2017 10:45:13 PM",
+      "dateFinished": "Jan 19, 2017 10:45:21 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "import org.apache.spark.ml.mleap.SparkUtil\n\nval pipeline \u003d SparkUtil.createPipelineModel(uid \u003d \"pipeline\", Array(featureModel, rfModel))\n\nval sbc \u003d SparkBundleContext()\nfor(bf \u003c- managed(BundleFile(\"jar:file:/tmp/mnist.model.rf.zip\"))) {\n        pipeline.writeBundle.save(bf)(sbc).get\n      }",
+      "dateUpdated": "Jan 19, 2017 11:01:19 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true,
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1482818769210_-73162247",
+      "id": "20161226-220609_127095339",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "\npipeline: org.apache.spark.ml.PipelineModel \u003d pipeline\n\nsbc: org.apache.spark.ml.bundle.SparkBundleContext \u003d SparkBundleContext(None,BundleRegistry(scala.tools.nsc.interpreter.IMain$TranslatingClassLoader@2be43993))\n"
+      },
+      "dateCreated": "Dec 26, 2016 10:06:09 AM",
+      "dateStarted": "Jan 19, 2017 10:49:07 PM",
+      "dateFinished": "Jan 19, 2017 10:49:08 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "",
+      "dateUpdated": "Jan 19, 2017 10:48:44 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1484894905709_724253883",
+      "id": "20170119-224825_832225241",
+      "dateCreated": "Jan 19, 2017 10:48:25 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "MNIST - MLEAP Demo Code",
+  "id": "2C4WTM6DA",
+  "angularObjects": {
+    "2C3YQJCRX:shared_process": [],
+    "2C3D7M8U9:shared_process": [],
+    "2C1DNBB8H:shared_process": [],
+    "2C4PKW2XE:shared_process": [],
+    "2C4528AGS:shared_process": [],
+    "2C1V6UHPP:shared_process": [],
+    "2C1P8A9UR:shared_process": [],
+    "2C2MK7982:shared_process": [],
+    "2C18RTSWU:shared_process": [],
+    "2C37HSN7Z:shared_process": [],
+    "2C1VCSS2U:shared_process": [],
+    "2C3MN6QJS:shared_process": [],
+    "2C4JMRRU4:shared_process": [],
+    "2C4AHV1RK:shared_process": [],
+    "2C4PGBB4W:shared_process": [],
+    "2C3J8XDY7:shared_process": [],
+    "2C3G6HCXN:shared_process": [],
+    "2C2BFN5FN:shared_process": []
+  },
+  "config": {},
+  "info": {}
+}
