@@ -1,0 +1,50 @@
+@import play.mvc.Http.Context.Implicit
+@(message: String)(implicit flash: Flash)
+@import helper._
+
+
+@main("Spark Jobs") {
+    <!-- Begin page content -->
+    <div class="container">
+
+        <div class="page-header">
+            <h3>
+                Model File
+            </h3>
+        </div>
+
+
+        <div class="row well">
+            <div class="col-lg-12">
+            @helper.form(action = routes.ModelUploader.upload, 'enctype -> "multipart/form-data") {
+                <div class="form-group">
+                    <label for="file">Model File</label>
+                    <input type="file" id="file" name="file">
+                    <p class="help-block">Select zip file for upload.</p>
+                </div>
+
+                <button type="submit" class="btn btn-info">Upload</button>
+            }
+            </div>
+        </div>
+
+        <br>
+
+        <div class="row">
+        @if(flash.get("message") != None) {
+            <div class="alert alert-warning alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <strong>Model File: </strong> @flash.get("message").
+            </div>
+        }
+        </div>
+
+        <br>
+
+        <div class="row">
+            <p> <img src="@routes.Assets.at("/images/logo.png")" /> </p>
+        </div>
+
+    </div>
+
+}
